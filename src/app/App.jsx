@@ -391,7 +391,7 @@ export default function App() {
           <>
 
             {/* KPI Cards - Enhanced Metrics */}
-            <section>
+            {/* <section>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
@@ -485,7 +485,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </section>
+            </section> */}
 
             {/* CPU Analysis Section */}
             <section>
