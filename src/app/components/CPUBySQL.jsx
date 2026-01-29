@@ -20,7 +20,7 @@ export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
 
   /* ---------- GRAPH CONFIG ---------- */
   const width = 1400;
-  const height = 360;
+  const height = 280;
   const maxCPU = 100; // CPU %
 
   /* ---------- NORMALIZE DATA ---------- */
@@ -93,7 +93,7 @@ export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
             <Cpu className="w-5 h-5 text-blue-600" />
             <div>
               <h3 className="text-base font-semibold text-gray-900">CPU Utilization by SQL</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Monitoring Period: Last 5 Hours</p>
+              <p className="text-xs text-gray-500 mt-0.5"></p>
             </div>
           </div>
           <div className="flex items-center gap-4 text-xs">
@@ -110,7 +110,7 @@ export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
       </div>
 
       {/* Graph */}
-      <div className="relative w-full" style={{ height: '360px' }}>
+      <div className="relative w-full" style={{ height: '280px' }}>
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
           <defs>
             <linearGradient id="sqlAreaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -343,11 +343,167 @@ export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
     return <TableSection />;
   }
 
-  // Full mode - both graph and table
+  // Full mode - side-by-side layout
   return (
     <div className="flex flex-col gap-6">
-      <GraphSection />
-      <TableSection />
+      {/* Page Header */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-600 rounded-lg shadow-lg">
+              <Cpu className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">CPU Utilization by SQL</h2>
+              <p className="text-sm text-gray-600 mt-1">Real-time monitoring and analysis of SQL query CPU consumption</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm">
+              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span className="font-semibold text-gray-700">Current Load</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm">
+              <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+              <span className="font-semibold text-gray-700">Baseline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Side-by-Side Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Graph Section */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-base font-semibold text-gray-900">CPU Trend Analysis</h3>
+            <p className="text-xs text-gray-500 mt-0.5"></p>
+          </div>
+
+          {/* Graph */}
+          <div className="relative w-full" style={{ height: '280px' }}>
+            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+              <defs>
+                <linearGradient id="sqlAreaGradientFull" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3c83f6" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#3c83f6" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+
+              {/* Grid Lines */}
+              {[0, 25, 50, 75, 100].map(pct => {
+                const y = height - (pct / 100) * height;
+                return (
+                  <line
+                    key={pct}
+                    x1={0}
+                    x2={width}
+                    y1={y}
+                    y2={y}
+                    className="stroke-gray-200"
+                    strokeWidth="1"
+                  />
+                );
+              })}
+
+              {/* Area */}
+              <path d={areaPath} fill="url(#sqlAreaGradientFull)" />
+
+              {/* Line */}
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#3c83f6"
+                strokeWidth="3"
+              />
+
+              {/* Points */}
+              {points.map(p => (
+                <circle
+                  key={p.timestamp}
+                  cx={p.x}
+                  cy={p.y}
+                  r={5}
+                  className="fill-blue-500 stroke-white stroke-2"
+                />
+              ))}
+            </svg>
+
+            {/* Y-axis labels */}
+            <div className="absolute left-2 top-0 h-full flex flex-col justify-between text-[10px] font-semibold text-gray-500 py-2">
+              <span>100%</span>
+              <span>75%</span>
+              <span>50%</span>
+              <span>25%</span>
+              <span>0%</span>
+            </div>
+          </div>
+
+          {/* X-axis */}
+          <div className="px-6 pb-4">
+            <div className="flex justify-between text-xs font-medium text-gray-500">
+              {points.map((p, i) => {
+                if (i === 0 || i === Math.floor(points.length / 2) || i === points.length - 1) {
+                  return <span key={p.timestamp}>{formatTime(p.timestamp)}</span>;
+                }
+                return <span key={p.timestamp} className="invisible">{formatTime(p.timestamp)}</span>;
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-base font-semibold text-gray-900">Top SQL Queries</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Ranked by CPU utilization</p>
+          </div>
+
+          <div className="flex-1 overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="w-[60px] pl-6">Rank</TableHead>
+                  <TableHead>SQL ID</TableHead>
+                  <TableHead>CPU %</TableHead>
+                  <TableHead className="text-right pr-6">Executions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topQueries.map((query, index) => (
+                  <TableRow
+                    key={query.sqlId}
+                    className={`cursor-pointer transition-colors ${query.cpuPercent >= 70 ? 'bg-red-50 hover:bg-red-100' : query.cpuPercent >= 40 ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-gray-50'}`}
+                    onClick={() => onQueryClick?.(query)}
+                  >
+                    <TableCell className="pl-6 font-medium text-gray-500">
+                      {index < 3 ? (
+                        <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${index === 0 ? "bg-yellow-100 text-yellow-700" : index === 1 ? "bg-gray-100 text-gray-700" : "bg-orange-100 text-orange-700"}`}>
+                          {index + 1}
+                        </span>
+                      ) : (
+                        <span className="ml-2 text-sm">#{index + 1}</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm font-bold text-blue-600 hover:underline">{query.sqlId}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all ${query.cpuPercent >= 70 ? 'bg-red-600' : query.cpuPercent >= 40 ? 'bg-orange-500' : 'bg-blue-600'}`} style={{ width: `${query.cpuPercent}%` }} />
+                        </div>
+                        <span className="text-xs font-bold w-10 text-right font-mono">{query.cpuPercent}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right pr-6 font-mono text-xs text-gray-600">
+                      {query.executions.toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

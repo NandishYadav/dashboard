@@ -12,7 +12,6 @@ import { SQLDetailDrawer } from '@/app/components/SQLDetailDrawer';
 import { CPUBySession } from '@/app/components/CPUBySession';
 import { CPUBySQL } from '@/app/components/CPUBySQL';
 import { SessionStateDistribution } from '@/app/components/SessionStateDistribution';
-import { time } from 'motion';
 
 // Mock data generation
 const generateSparklineData = () => {
@@ -388,7 +387,10 @@ export default function App() {
     switch (activeSection) {
       case 'overview':
         return (
+
           <>
+
+
 
             {/* KPI Cards - Enhanced Metrics */}
             {/* <section>
@@ -493,22 +495,39 @@ export default function App() {
                 <h2 className="text-xl font-bold text-gray-900">CPU Performance Analysis</h2>
                 <p className="text-sm text-gray-500 mt-1">Real-time CPU utilization by sessions and SQL queries</p>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <CPUBySession sessions={mockSessionCPU} mode="graph-only" onSessionClick={(session) => {
-                  const incident = mockIncidents.find(i => i.sid === session.sid);
-                  if (incident) setSelectedIncident(incident);
-                }} />
-                <CPUBySQL queries={mockSQLQueryCPU} mode="graph-only" />
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* CPU by Session - Clickable */}
+                <div
+                  onClick={() => setActiveSection('cpu-session')}
+                  className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg"
+                >
+                  <CPUBySession sessions={mockSessionCPU} mode="graph-only" onSessionClick={(session) => {
+                    const incident = mockIncidents.find(i => i.sid === session.sid);
+                    if (incident) setSelectedIncident(incident);
+                  }} />
+                </div>
+
+                {/* CPU by SQL - Clickable */}
+                <div
+                  onClick={() => setActiveSection('cpu-sql')}
+                  className="cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg"
+                >
+                  <CPUBySQL queries={mockSQLQueryCPU} mode="graph-only" />
+                </div>
               </div>
             </section>
 
             {/* Blocking Sessions */}
-            <section>
+            {/* <section>
               <BlockingGraph nodes={mockBlockingNodes} mode="cards-only" />
-            </section>
+            </section> */}
 
-            {/* Storage Health */}
-            <section>
+            {/* Storage Health - Clickable */}
+            <section
+              onClick={() => setActiveSection('storage')}
+              className="cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg"
+            >
               <StorageHealth tablespaces={tablespaceData} mode="gauges-only" />
             </section>
           </>

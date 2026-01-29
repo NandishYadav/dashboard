@@ -313,6 +313,84 @@ export function StorageHealth({ tablespaces, mode = 'full' }) {
     </div>
   );
 
+  // Compact Gauge Cards for Overview Page
+  const CompactGaugeCards = () => (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Compact Header */}
+      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2">
+          <Database className="w-4 h-4 text-blue-600" />
+          <h3 className="text-sm font-semibold text-gray-900">Storage Health</h3>
+        </div>
+      </div>
+
+      {/* Compact Cards Grid */}
+      <div className="p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Compact USERS Card */}
+          <div className="flex flex-col rounded-lg border-2 border-red-200 bg-red-50 p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-red-600">USERS</p>
+                <p className="text-2xl font-black text-red-600">94%</p>
+              </div>
+              <AlertCircle className="w-4 h-4 text-red-600" />
+            </div>
+            <div className="w-full h-1.5 bg-red-100 rounded-full overflow-hidden">
+              <div className="h-full bg-red-500" style={{ width: '94%' }} />
+            </div>
+            <p className="text-[10px] text-red-600 font-semibold mt-1">Critical</p>
+          </div>
+
+          {/* Compact REPORTS Card */}
+          <div className="flex flex-col rounded-lg border-2 border-red-200 bg-red-50 p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-red-600">REPORTS</p>
+                <p className="text-2xl font-black text-red-600">96%</p>
+              </div>
+              <AlertCircle className="w-4 h-4 text-red-600" />
+            </div>
+            <div className="w-full h-1.5 bg-red-100 rounded-full overflow-hidden">
+              <div className="h-full bg-red-500" style={{ width: '96%' }} />
+            </div>
+            <p className="text-[10px] text-red-600 font-semibold mt-1">Critical</p>
+          </div>
+
+          {/* Compact SYSTEM Card */}
+          <div className="flex flex-col rounded-lg border border-gray-200 bg-white p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-gray-600">SYSTEM</p>
+                <p className="text-2xl font-black text-gray-900">45%</p>
+              </div>
+              <HardDrive className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="w-full h-1.5 bg-blue-50 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-600" style={{ width: '45%' }} />
+            </div>
+            <p className="text-[10px] text-green-500 font-semibold mt-1">Healthy</p>
+          </div>
+
+          {/* Compact DATA_IDX Card */}
+          <div className="flex flex-col rounded-lg border border-orange-200 bg-orange-50/30 p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-orange-600">DATA_IDX</p>
+                <p className="text-2xl font-black text-orange-600">82%</p>
+              </div>
+              <AlertCircle className="w-4 h-4 text-orange-600" />
+            </div>
+            <div className="w-full h-1.5 bg-orange-100 rounded-full overflow-hidden">
+              <div className="h-full bg-orange-500" style={{ width: '82%' }} />
+            </div>
+            <p className="text-[10px] text-orange-600 font-semibold mt-1">Warning</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Part 2: Heatmap and Stats Section
   const HeatmapSection = () => (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -335,7 +413,7 @@ export function StorageHealth({ tablespaces, mode = 'full' }) {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <span className="text-blue-600">●</span>
-                Core-Level Load Distribution
+                table space usage
               </h3>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500">
@@ -353,63 +431,63 @@ export function StorageHealth({ tablespaces, mode = 'full' }) {
                 style={{ backgroundColor: "#2e1065" }}
               >
                 <span className="text-[10px] font-bold text-white/40">
-                  C00
+                  table 1
                 </span>
                 <div className="absolute inset-0 bg-blue-600/10 rounded-lg opacity-0 group-hover:opacity-100 border border-blue-600/50 pointer-events-none" />
                 {/* Tooltip */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-32 bg-gray-900 text-white text-[10px] p-2 rounded shadow-xl z-50">
                   <div className="font-bold border-b border-white/10 pb-1 mb-1">
-                    Core 00
+                    table 1
                   </div>
                   <div>Load: 12.4%</div>
                   <div>Temp: 42°C</div>
                 </div>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#4c1d95" }}>
-                <span className="text-[10px] font-bold text-white/60">C01</span>
+                <span className="text-[10px] font-bold text-white/60">table 1</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#7c3aed" }}>
-                <span className="text-[10px] font-bold text-white">C02</span>
+                <span className="text-[10px] font-bold text-white">table 2</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center relative" style={{ backgroundColor: "#ff8c00" }}>
-                <span className="text-[10px] font-bold text-black">C03</span>
+                <span className="text-[10px] font-bold text-black">table 3</span>
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#f97316" }}>
-                <span className="text-[10px] font-bold text-black">C04</span>
+                <span className="text-[10px] font-bold text-black">table 4</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#4c1d95" }}>
-                <span className="text-[10px] font-bold text-white/60">C05</span>
+                <span className="text-[10px] font-bold text-white/60">table 5</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#2e1065" }}>
-                <span className="text-[10px] font-bold text-white/40">C06</span>
+                <span className="text-[10px] font-bold text-white/40">table 6</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#2e1065" }}>
-                <span className="text-[10px] font-bold text-white/40">C07</span>
+                <span className="text-[10px] font-bold text-white/40">table 7</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#6d28d9" }}>
-                <span className="text-[10px] font-bold text-white">C08</span>
+                <span className="text-[10px] font-bold text-white">table 8</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#ea580c" }}>
-                <span className="text-[10px] font-bold text-black">C09</span>
+                <span className="text-[10px] font-bold text-black">table 9</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#ff8c00" }}>
-                <span className="text-[10px] font-bold text-black">C10</span>
+                <span className="text-[10px] font-bold text-black">table 10</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#4c1d95" }}>
-                <span className="text-[10px] font-bold text-white/60">C11</span>
+                <span className="text-[10px] font-bold text-white/60">table 11</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#2e1065" }}>
-                <span className="text-[10px] font-bold text-white/40">C12</span>
+                <span className="text-[10px] font-bold text-white/40">table 12</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#2e1065" }}>
-                <span className="text-[10px] font-bold text-white/40">C13</span>
+                <span className="text-[10px] font-bold text-white/40">table 13</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#7c3aed" }}>
-                <span className="text-[10px] font-bold text-white">C14</span>
+                <span className="text-[10px] font-bold text-white">table 14</span>
               </div>
               <div className="aspect-square rounded-lg flex items-center justify-center" style={{ backgroundColor: "#4c1d95" }}>
-                <span className="text-[10px] font-bold text-white/60">C15</span>
+                <span className="text-[10px] font-bold text-white/60">table 15</span>
               </div>
             </div>
           </div>
@@ -460,6 +538,10 @@ export function StorageHealth({ tablespaces, mode = 'full' }) {
 
   // Render based on mode
   if (mode === 'gauges-only') {
+    return <GaugeCardsSection />;
+  }
+
+  if (mode === 'gauges-compact') {
     return <GaugeCardsSection />;
   }
 
