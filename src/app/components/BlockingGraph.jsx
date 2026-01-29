@@ -55,105 +55,216 @@ export function BlockingGraph({ nodes }) {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 overflow-auto">
-      <h3 className="text-lg font-semibold mb-4 text-gray-900">Blocking Session Graph</h3>
-      <div className="overflow-x-auto">
-        <svg width={width} height={height} className="border border-gray-100 rounded">
-          {/* Edges */}
-          <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="10"
-              markerHeight="10"
-              refX="9"
-              refY="3"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3, 0 6" fill="#dc2626" />
-            </marker>
-          </defs>
-          
-          {edges.map((edge, idx) => {
-            if (!edge) return null;
-            return (
-              <line
-                key={idx}
-                x1={edge.from.x}
-                y1={edge.from.y}
-                x2={edge.to.x}
-                y2={edge.to.y}
-                stroke="#dc2626"
-                strokeWidth="2"
-                markerEnd="url(#arrowhead)"
-              />
-            );
-          })}
-
-          {/* Nodes */}
-          {layout.map((item) => (
-            <g
-              key={item.node.sid}
-              transform={`translate(${item.x}, ${item.y})`}
-              onMouseEnter={() => setHoveredNode(item.node.sid)}
-              onMouseLeave={() => setHoveredNode(null)}
-              className="cursor-pointer"
-            >
-              <circle
-                r="30"
-                fill={item.node.isRootBlocker ? '#dc2626' : '#2563eb'}
-                stroke={hoveredNode === item.node.sid ? '#1e40af' : 'transparent'}
-                strokeWidth="3"
-              />
-              <text
-                textAnchor="middle"
-                dy="5"
-                fill="white"
-                fontSize="14"
-                fontWeight="bold"
-              >
-                {item.node.sid}
-              </text>
-
-              {/* Tooltip */}
-              {hoveredNode === item.node.sid && (
-                <g>
-                  <rect
-                    x="40"
-                    y="-40"
-                    width="180"
-                    height="80"
-                    fill="white"
-                    stroke="#e5e7eb"
-                    strokeWidth="1"
-                    rx="4"
-                    filter="drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                  />
-                  <text x="50" y="-20" fontSize="12" fill="#111827" fontWeight="600">
-                    SID: {item.node.sid}
-                  </text>
-                  <text x="50" y="-5" fontSize="11" fill="#6b7280">
-                    User: {item.node.username}
-                  </text>
-                  <text x="50" y="10" fontSize="11" fill="#6b7280">
-                    Program: {item.node.program.substring(0, 20)}
-                  </text>
-                  <text x="50" y="25" fontSize="11" fill="#dc2626" fontWeight="600">
-                    Wait: {item.node.waitTime}s
-                  </text>
-                </g>
-              )}
-            </g>
-          ))}
-        </svg>
+      <div>
+        <p>New Active session code</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
+              Active Sessions
+            </p>
+            <h3 className="text-3xl font-black mt-1">42</h3>
+          </div>
+          <div className="bg-primary/10 p-2 rounded-lg text-primary">
+            <span className="material-symbols-outlined !text-2xl">bolt</span>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="text-emerald-500 text-sm font-bold flex items-center">
+            <span className="material-symbols-outlined !text-sm">
+              trending_up
+            </span>{" "}
+            12%
+          </span>
+          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
+            vs last 15m
+          </span>
+        </div>
       </div>
-      <div className="mt-4 flex gap-6 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-red-600"></div>
-          <span className="text-gray-700">Root Blocker</span>
+      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-waiting" />
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
+              Waiting Sessions
+            </p>
+            <h3 className="text-3xl font-black mt-1">8</h3>
+          </div>
+          <div className="bg-waiting/10 p-2 rounded-lg text-waiting">
+            <span className="material-symbols-outlined !text-2xl">
+              hourglass_empty
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-blue-600"></div>
-          <span className="text-gray-700">Blocked Session</span>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="text-rose-500 text-sm font-bold flex items-center">
+            <span className="material-symbols-outlined !text-sm">
+              trending_up
+            </span>{" "}
+            4%
+          </span>
+          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
+            vs last 15m
+          </span>
         </div>
+      </div>
+      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-idle" />
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
+              Idle Sessions
+            </p>
+            <h3 className="text-3xl font-black mt-1">156</h3>
+          </div>
+          <div className="bg-idle/10 p-2 rounded-lg text-idle">
+            <span className="material-symbols-outlined !text-2xl">bed</span>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="text-slate-500 text-sm font-bold flex items-center">
+            <span className="material-symbols-outlined !text-sm">
+              trending_down
+            </span>{" "}
+            2%
+          </span>
+          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
+            vs last 15m
+          </span>
+        </div>
+      </div>
+    </div>
+
+      {/* Main Chart Container */}
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-md p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center gap-6">
+          <h4 className="text-lg font-bold">Sessions Distribution over Time</h4>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm bg-primary" />
+              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
+                Active
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm bg-waiting" />
+              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
+                Waiting
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm bg-idle" />
+              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
+                Idle
+              </span>
+            </div>
+          </div>
+        </div>
+        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500">
+          <span className="material-symbols-outlined">more_horiz</span>
+        </button>
+      </div>
+      {/* Area Chart Visualization Simulation */}
+      <div className="relative chart-container w-full flex flex-col justify-end">
+        {/* SVG Area Simulation */}
+        <svg
+          className="w-full overflow-visible"
+          preserveAspectRatio="none"
+          viewBox="0 0 1000 300"
+        >
+          {/* Idle Area (Bottom) */}
+          <path
+            d="M0,280 L100,270 L200,275 L300,260 L400,265 L500,250 L600,255 L700,240 L800,245 L900,230 L1000,235 L1000,300 L0,300 Z"
+            fill="#94a3b8"
+            fillOpacity="0.2"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          {/* Waiting Area (Middle) */}
+          <path
+            d="M0,220 L100,210 L200,230 L300,200 L400,240 L500,210 L600,230 L700,180 L800,210 L900,220 L1000,200 L1000,235 L900,230 L800,245 L700,240 L600,255 L500,250 L400,265 L300,260 L200,275 L100,270 L0,280 Z"
+            fill="#f59e0b"
+            fillOpacity="0.3"
+            stroke="#f59e0b"
+            strokeWidth="1.5"
+          />
+          {/* Active Area (Top) */}
+          <path
+            d="M0,150 Q100,120 200,140 T400,100 T600,130 T800,90 T1000,120 L1000,200 L900,220 L800,210 L700,180 L600,230 L500,210 L400,240 L300,200 L200,230 L100,210 L0,220 Z"
+            fill="#3c83f6"
+            fillOpacity="0.4"
+            stroke="#3c83f6"
+            strokeWidth="2.5"
+          />
+          {/* Tooltip Line Marker */}
+          {/* <line
+            stroke="#3c83f6"
+            strokeDasharray={4}
+            strokeWidth={1}
+            x1={700}
+            x2={700}
+            y1={0}
+            y2={300}
+          />
+          <circle
+            cx={700}
+            cy={180}
+            fill="#3c83f6"
+            r={4}
+            stroke="white"
+            strokeWidth={2}
+          /> */}
+        </svg>
+        {/* Tooltip Overlay */}
+        {/* <div className="absolute left-[70%] top-10 -translate-x-1/2 pointer-events-none z-10">
+          <div className="bg-white dark:bg-gray-900 border border-primary p-4 rounded-xl shadow-xl min-w-48 backdrop-blur-sm">
+            <p className="text-xs font-bold text-[#49699c] dark:text-gray-400 mb-2">
+              Today, 14:45:00
+            </p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="size-2 rounded-full bg-primary" /> Active
+                </span>
+                <span className="text-sm font-black">42</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="size-2 rounded-full bg-waiting" /> Waiting
+                </span>
+                <span className="text-sm font-black text-waiting">12</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="size-2 rounded-full bg-idle" /> Idle
+                </span>
+                <span className="text-sm font-black">148</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between">
+              <span className="text-xs font-bold text-gray-500 uppercase">
+                Total Load
+              </span>
+              <span className="text-sm font-black">202</span>
+            </div>
+          </div>
+        </div> */}
+        {/* X Axis Labels */}
+        <div className="flex justify-between mt-4 px-2">
+          <span className="text-xs font-bold text-[#49699c]">14:00</span>
+          <span className="text-xs font-bold text-[#49699c]">14:15</span>
+          <span className="text-xs font-bold text-[#49699c]">14:30</span>
+          <span className="text-xs font-bold text-[#49699c]">
+            14:45
+          </span>
+          <span className="text-xs font-bold text-[#49699c]">15:00</span>
+        </div>
+      </div>
+    </div>
+        
       </div>
     </div>
   );

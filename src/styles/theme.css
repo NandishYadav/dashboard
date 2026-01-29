@@ -119,7 +119,26 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+
 @layer base {
+  .heatmap-square {
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .heatmap-square:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+    z-index: 10;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #282b39;
+    border-radius: 10px;
+  }
   * {
     @apply border-border outline-ring/50;
   }
