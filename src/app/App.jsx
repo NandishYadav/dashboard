@@ -11,6 +11,7 @@ import { StorageHealth } from '@/app/components/StorageHealth';
 import { SQLDetailDrawer } from '@/app/components/SQLDetailDrawer';
 import { CPUBySession } from '@/app/components/CPUBySession';
 import { CPUBySQL } from '@/app/components/CPUBySQL';
+import { SessionStateDistribution } from '@/app/components/SessionStateDistribution';
 import { time } from 'motion';
 
 // Mock data generation
@@ -185,9 +186,9 @@ const tablespaceData = [
 ];
 
 const mockSessionCPU = [
-  
+
   {
-        timestamp: "2026-01-28T08:00:00.000Z",
+    timestamp: "2026-01-28T08:00:00.000Z",
     sid: 2890,
     username: 'BATCH_USER',
     program: 'python@batch-processor',
@@ -197,7 +198,7 @@ const mockSessionCPU = [
     status: 'ACTIVE',
   },
   {
-     timestamp: "2026-01-28T08:15:00.000Z",
+    timestamp: "2026-01-28T08:15:00.000Z",
     sid: 1456,
     username: 'WEB_APP',
     program: 'node@web-server-03',
@@ -267,7 +268,7 @@ const mockSessionCPU = [
     status: 'ACTIVE',
   },
   {
-     timestamp: "2026-01-28T10:00:00.000Z",
+    timestamp: "2026-01-28T10:00:00.000Z",
     sid: 8901,
     username: 'ANALYTICS',
     program: 'tableau@analytics-server',
@@ -331,7 +332,7 @@ HAVING SUM(oi.quantity * oi.price) > 1000`,
     module: 'ReportingEngine',
   },
   {
-     timestamp: "2026-01-28T09:00:00.000Z",
+    timestamp: "2026-01-28T09:00:00.000Z",
     sqlId: 'd2k8m4p9s7t3v',
     cpuPercent: 42,
     cpuTime: 920,
@@ -364,7 +365,7 @@ HAVING SUM(oi.quantity * oi.price) > 1000`,
     module: 'InventoryAPI',
   },
   {
-     timestamp: "2026-01-28T09:45:00.000Z",
+    timestamp: "2026-01-28T09:45:00.000Z",
     sqlId: 'j8m4n9p2q6r3s',
     cpuPercent: 22,
     cpuTime: 660,
@@ -388,88 +389,134 @@ export default function App() {
       case 'overview':
         return (
           <>
-            {/* Section 1: KPI Cards */}
+
+            {/* KPI Cards - Enhanced Metrics */}
             <section>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard
-                  title="Active Incidents"
-                  value={7}
-                  trend="up"
-                  severity="critical"
-                  sparklineData={generateSparklineData()}
-                />
-                <KPICard
-                  title="Blocking Sessions"
-                  value={2}
-                  trend="stable"
-                  severity="warning"
-                  sparklineData={generateSparklineData()}
-                />
-                <KPICard
-                  title="Long Running Queries"
-                  value={3}
-                  trend="down"
-                  severity="warning"
-                  sparklineData={generateSparklineData()}
-                />
-                <KPICard
-                  title="Impacted Sessions"
-                  value={9}
-                  trend="up"
-                  severity="critical"
-                  sparklineData={generateSparklineData()}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-red-50 p-3 rounded-lg">
+                      <Activity className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div className="flex items-center gap-1 text-red-600 text-sm font-semibold">
+                      <span>+12%</span>
+                    </div>
+                  </div>
+                  <h3 className="text-gray-600 text-sm font-medium mb-1">Active Incidents</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-gray-900">7</span>
+                    <span className="text-sm text-gray-500">critical issues</span>
+                  </div>
+                  <div className="mt-4 h-12">
+                    <div className="flex items-end justify-between h-full gap-1">
+                      {generateSparklineData().map((val, i) => (
+                        <div key={i} className="flex-1 bg-red-100 rounded-t" style={{ height: `${(val / 15) * 100}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <Activity className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
+                      <span>-8%</span>
+                    </div>
+                  </div>
+                  <h3 className="text-gray-600 text-sm font-medium mb-1">CPU Utilization</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-gray-900">68%</span>
+                    <span className="text-sm text-gray-500">avg load</span>
+                  </div>
+                  <div className="mt-4 h-12">
+                    <div className="flex items-end justify-between h-full gap-1">
+                      {generateSparklineData().map((val, i) => (
+                        <div key={i} className="flex-1 bg-blue-100 rounded-t" style={{ height: `${(val / 15) * 100}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-purple-50 p-3 rounded-lg">
+                      <Activity className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
+                      <span>+5%</span>
+                    </div>
+                  </div>
+                  <h3 className="text-gray-600 text-sm font-medium mb-1">Active Sessions</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-gray-900">142</span>
+                    <span className="text-sm text-gray-500">connections</span>
+                  </div>
+                  <div className="mt-4 h-12">
+                    <div className="flex items-end justify-between h-full gap-1">
+                      {generateSparklineData().map((val, i) => (
+                        <div key={i} className="flex-1 bg-purple-100 rounded-t" style={{ height: `${(val / 15) * 100}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-lg transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="bg-orange-50 p-3 rounded-lg">
+                      <Database className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div className="flex items-center gap-1 text-red-600 text-sm font-semibold">
+                      <span>+3%</span>
+                    </div>
+                  </div>
+                  <h3 className="text-gray-600 text-sm font-medium mb-1">Storage Usage</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-gray-900">85%</span>
+                    <span className="text-sm text-gray-500">capacity</span>
+                  </div>
+                  <div className="mt-4 h-12">
+                    <div className="flex items-end justify-between h-full gap-1">
+                      {generateSparklineData().map((val, i) => (
+                        <div key={i} className="flex-1 bg-orange-100 rounded-t" style={{ height: `${(val / 15) * 100}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
 
-            {/* Section 2: Unified Incident View */}
+            {/* CPU Analysis Section */}
             <section>
               <div className="mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">Active Incidents</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Merged view of blockers, victims, and long-running queries
-                </p>
+                <h2 className="text-xl font-bold text-gray-900">CPU Performance Analysis</h2>
+                <p className="text-sm text-gray-500 mt-1">Real-time CPU utilization by sessions and SQL queries</p>
               </div>
-              <IncidentTable incidents={mockIncidents} onRowClick={setSelectedIncident} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CPUBySession sessions={mockSessionCPU} mode="graph-only" onSessionClick={(session) => {
+                  const incident = mockIncidents.find(i => i.sid === session.sid);
+                  if (incident) setSelectedIncident(incident);
+                }} />
+                <CPUBySQL queries={mockSQLQueryCPU} mode="graph-only" />
+              </div>
             </section>
 
-            {/* Section 3 & 4: Side by side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Section 3: Blocking Graph */}
-              <section>
-                <BlockingGraph nodes={mockBlockingNodes} />
-              </section>
-
-              {/* Section 5: Wait Class Distribution */}
-              <section>
-                <WaitClassDistribution data={waitClassData} />
-              </section>
-            </div>
-
-            {/* Section 6: Storage Health */}
+            {/* Blocking Sessions */}
             <section>
-              <StorageHealth tablespaces={tablespaceData} />
+              <BlockingGraph nodes={mockBlockingNodes} mode="cards-only" />
+            </section>
+
+            {/* Storage Health */}
+            <section>
+              <StorageHealth tablespaces={tablespaceData} mode="gauges-only" />
             </section>
           </>
         );
-
-      case 'incidents':
-        return (
-          <section>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">Active Incidents</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Merged view of blockers, victims, and long-running queries
-              </p>
-            </div>
-            <IncidentTable incidents={mockIncidents} onRowClick={setSelectedIncident} />
-          </section>
-        );
-
       case 'cpu-session':
         return (
           <section>
-            <CPUBySession data = {mockSessionCPU} sessions={mockSessionCPU} onSessionClick={(session) => {
+            <CPUBySession data={mockSessionCPU} sessions={mockSessionCPU} onSessionClick={(session) => {
               const incident = mockIncidents.find(i => i.sid === session.sid);
               if (incident) setSelectedIncident(incident);
             }} />
@@ -487,22 +534,6 @@ export default function App() {
         return (
           <section>
             <BlockingGraph nodes={mockBlockingNodes} />
-          </section>
-        );
-
-      case 'long-running':
-        return (
-          <section>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">Long Running Queries</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Queries running longer than 5 minutes
-              </p>
-            </div>
-            <IncidentTable 
-              incidents={mockIncidents.filter(i => i.role === 'LONG RUNNER' || i.elapsedTime > 300)} 
-              onRowClick={setSelectedIncident} 
-            />
           </section>
         );
 
@@ -535,7 +566,7 @@ export default function App() {
                   <Activity className="w-6 h-6 text-blue-600" />
                   <h1 className="text-xl font-bold text-gray-900">Oracle Database Observability</h1>
                 </div>
-                
+
                 <div className="flex items-center gap-2 lg:ml-8">
                   <Database className="w-4 h-4 text-gray-600" />
                   <Select value={selectedDb} onValueChange={setSelectedDb}>

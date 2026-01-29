@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  LayoutDashboard, 
-  Database, 
-  HardDrive, 
-  Activity, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  Database,
+  HardDrive,
+  Activity,
   TrendingUp,
   Lock,
   Clock,
@@ -24,11 +24,11 @@ export function Sidebar({ activeSection, onSectionChange }) {
 
   const navigationItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'incidents', label: 'Active Incidents', icon: Activity },
+    // { id: 'incidents', label: 'Active Incidents', icon: Activity },
     { id: 'cpu-session', label: 'CPU by Session', icon: TrendingUp },
     { id: 'cpu-sql', label: 'CPU by SQL', icon: Database },
     { id: 'blocking', label: 'Blocking Sessions', icon: Lock },
-    { id: 'long-running', label: 'Long Running', icon: Clock },
+    // { id: 'long-running', label: 'Long Running', icon: Clock },
     { id: 'storage', label: 'Storage Health', icon: HardDrive },
   ];
 
@@ -107,7 +107,7 @@ export function Sidebar({ activeSection, onSectionChange }) {
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeSection === item.id;
-                
+
                 return (
                   <button
                     key={item.id}
@@ -118,8 +118,8 @@ export function Sidebar({ activeSection, onSectionChange }) {
                     className={`
                       w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                       transition-colors
-                      ${isActive 
-                        ? 'bg-blue-50 text-blue-600 font-medium' 
+                      ${isActive
+                        ? 'bg-blue-50 text-blue-600 font-medium'
                         : 'text-gray-700 hover:bg-gray-50'
                       }
                       ${isCollapsed ? 'justify-center' : ''}

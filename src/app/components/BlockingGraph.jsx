@@ -1,271 +1,264 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Zap, Hourglass, BedDouble, MoreHorizontal, Activity } from 'lucide-react';
 
-export function BlockingGraph({ nodes }) {
-  const [hoveredNode, setHoveredNode] = useState(null);
+const mockData = [
+  { time: '14:00', active: 30, waiting: 5, idle: 165 },
+  { time: '14:05', active: 35, waiting: 8, idle: 160 },
+  { time: '14:10', active: 38, waiting: 6, idle: 158 },
+  { time: '14:15', active: 32, waiting: 10, idle: 160 },
+  { time: '14:20', active: 45, waiting: 15, idle: 142 },
+  { time: '14:25', active: 55, waiting: 12, idle: 135 },
+  { time: '14:30', active: 60, waiting: 8, idle: 134 },
+  { time: '14:35', active: 50, waiting: 14, idle: 138 },
+  { time: '14:40', active: 48, waiting: 10, idle: 144 },
+  { time: '14:45', active: 42, waiting: 12, idle: 148 },
+  { time: '14:50', active: 35, waiting: 8, idle: 159 },
+  { time: '14:55', active: 38, waiting: 6, idle: 158 },
+  { time: '15:00', active: 30, waiting: 5, idle: 167 },
+];
 
-  // Build a simple hierarchical layout
-  const buildLayout = () => {
-    const rootBlockers = nodes.filter(n => n.isRootBlocker);
-    const layout = [];
-    const visited = new Set();
+export function BlockingGraph({ mode = 'full' }) {
 
-    const addNodeAndChildren = (node, level, xOffset) => {
-      if (visited.has(node.sid)) return xOffset;
-      
-      visited.add(node.sid);
-      const x = xOffset;
-      const y = level * 100 + 50;
-      
-      layout.push({ node, x, y, level });
+  // Custom Tooltip Component
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const activeVal = payload.find(p => p.dataKey === 'active')?.value || 0;
+      const waitingVal = payload.find(p => p.dataKey === 'waiting')?.value || 0;
+      const idleVal = payload.find(p => p.dataKey === 'idle')?.value || 0;
+      const total = activeVal + waitingVal + idleVal;
 
-      // Find children (nodes being blocked by this one)
-      const children = nodes.filter(n => n.blockingSid === node.sid);
-      let currentX = xOffset;
-      
-      children.forEach((child, idx) => {
-        currentX = addNodeAndChildren(child, level + 1, currentX);
-        currentX += 150;
-      });
-
-      return Math.max(xOffset + 150, currentX);
-    };
-
-    let globalX = 50;
-    rootBlockers.forEach(blocker => {
-      globalX = addNodeAndChildren(blocker, 0, globalX);
-      globalX += 100;
-    });
-
-    return layout;
+      return (
+        <div className="bg-white rounded-xl shadow-xl border border-blue-500 p-4 min-w-[180px]">
+          <p className="text-xs font-bold text-gray-500 mb-3">Today, {label}:00</p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span className="text-sm font-semibold text-gray-700">Active</span>
+              </div>
+              <span className="text-sm font-black text-gray-900">{activeVal}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                <span className="text-sm font-semibold text-gray-700">Waiting</span>
+              </div>
+              <span className="text-sm font-black text-orange-500">{waitingVal}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                <span className="text-sm font-semibold text-gray-700">Idle</span>
+              </div>
+              <span className="text-sm font-black text-gray-900">{idleVal}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Load</span>
+            <span className="text-sm font-black text-gray-900">{total}</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
-  const layout = buildLayout();
-  const width = Math.max(800, layout.reduce((max, item) => Math.max(max, item.x), 0) + 100);
-  const height = Math.max(400, layout.reduce((max, item) => Math.max(max, item.y), 0) + 100);
+  // Part 1: Graph Section
+  const GraphSection = () => (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-3">
+          <Activity className="w-5 h-5 text-blue-600" />
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Session Distribution</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Active, waiting, and idle sessions over time</p>
+          </div>
+        </div>
+      </div>
 
-  // Build edges
-  const edges = layout
-    .filter(item => item.node.blockingSid)
-    .map(item => {
-      const source = layout.find(l => l.node.sid === item.node.blockingSid);
-      if (!source) return null;
-      return { from: source, to: item };
-    })
-    .filter(Boolean);
+      {/* Graph */}
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-blue-500"></div>
+              <span className="text-sm font-semibold text-gray-500">Active</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-orange-400"></div>
+              <span className="text-sm font-semibold text-gray-500">Waiting</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-gray-300"></div>
+              <span className="text-sm font-semibold text-gray-500">Idle</span>
+            </div>
+          </div>
+        </div>
 
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={mockData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="activeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="time"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fontWeight: 'bold', fill: '#64748b' }}
+                dy={10}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#3b82f6', strokeWidth: 1, strokeDasharray: '4 4' }} />
+
+              <Area
+                type="monotone"
+                dataKey="idle"
+                stackId="1"
+                stroke="#cbd5e1"
+                fill="#cbd5e1"
+                fillOpacity={0.3}
+                strokeWidth={2}
+                activeDot={{ r: 4, stroke: 'white', strokeWidth: 2, fill: '#94a3b8' }}
+              />
+              <Area
+                type="monotone"
+                dataKey="waiting"
+                stackId="1"
+                stroke="#fb923c"
+                fill="#fb923c"
+                fillOpacity={0.3}
+                strokeWidth={2}
+                activeDot={{ r: 4, stroke: 'white', strokeWidth: 2, fill: '#fb923c' }}
+              />
+              <Area
+                type="monotone"
+                dataKey="active"
+                stackId="1"
+                stroke="#3b82f6"
+                fill="url(#activeGradient)"
+                strokeWidth={2}
+                activeDot={{ r: 4, stroke: 'white', strokeWidth: 2, fill: '#3b82f6' }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Part 2: Cards Section
+  const CardsSection = () => (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-3">
+          <Activity className="w-5 h-5 text-blue-600" />
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Session Metrics</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Current session statistics and trends</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Active */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 relative overflow-hidden group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Active Sessions</h4>
+                <span className="text-3xl font-black text-gray-900">42</span>
+              </div>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Zap className="w-5 h-5 text-blue-500" fill="currentColor" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <span className="text-green-500 flex items-center">
+                <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                12%
+              </span>
+              <span className="text-gray-400 font-medium">vs last 15m</span>
+            </div>
+          </div>
+
+          {/* Card 2: Waiting */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 relative overflow-hidden group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Waiting Sessions</h4>
+                <span className="text-3xl font-black text-gray-900">8</span>
+              </div>
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <Hourglass className="w-5 h-5 text-orange-400" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <span className="text-red-500 flex items-center">
+                <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                4%
+              </span>
+              <span className="text-gray-400 font-medium">vs last 15m</span>
+            </div>
+          </div>
+
+          {/* Card 3: Idle */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 relative overflow-hidden group">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-300"></div>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Idle Sessions</h4>
+                <span className="text-3xl font-black text-gray-900">156</span>
+              </div>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <BedDouble className="w-5 h-5 text-gray-500" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <span className="text-gray-500 flex items-center">
+                <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                  <polyline points="17 18 23 18 23 12"></polyline>
+                </svg>
+                2%
+              </span>
+              <span className="text-gray-400 font-medium">vs last 15m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render based on mode
+  if (mode === 'graph-only') {
+    return <GraphSection />;
+  }
+
+  if (mode === 'cards-only') {
+    return <CardsSection />;
+  }
+
+  // Full mode - both sections
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 overflow-auto">
-      <div>
-        <p>New Active session code</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
-              Active Sessions
-            </p>
-            <h3 className="text-3xl font-black mt-1">42</h3>
-          </div>
-          <div className="bg-primary/10 p-2 rounded-lg text-primary">
-            <span className="material-symbols-outlined !text-2xl">bolt</span>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-emerald-500 text-sm font-bold flex items-center">
-            <span className="material-symbols-outlined !text-sm">
-              trending_up
-            </span>{" "}
-            12%
-          </span>
-          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
-            vs last 15m
-          </span>
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-waiting" />
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
-              Waiting Sessions
-            </p>
-            <h3 className="text-3xl font-black mt-1">8</h3>
-          </div>
-          <div className="bg-waiting/10 p-2 rounded-lg text-waiting">
-            <span className="material-symbols-outlined !text-2xl">
-              hourglass_empty
-            </span>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-rose-500 text-sm font-bold flex items-center">
-            <span className="material-symbols-outlined !text-sm">
-              trending_up
-            </span>{" "}
-            4%
-          </span>
-          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
-            vs last 15m
-          </span>
-        </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-sm relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-1 h-full bg-idle" />
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-semibold text-[#49699c] dark:text-gray-400 uppercase tracking-wider">
-              Idle Sessions
-            </p>
-            <h3 className="text-3xl font-black mt-1">156</h3>
-          </div>
-          <div className="bg-idle/10 p-2 rounded-lg text-idle">
-            <span className="material-symbols-outlined !text-2xl">bed</span>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-slate-500 text-sm font-bold flex items-center">
-            <span className="material-symbols-outlined !text-sm">
-              trending_down
-            </span>{" "}
-            2%
-          </span>
-          <span className="text-[#49699c] dark:text-gray-500 text-xs font-medium">
-            vs last 15m
-          </span>
-        </div>
-      </div>
-    </div>
-
-      {/* Main Chart Container */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-[#e7ecf4] dark:border-gray-700 shadow-md p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-6">
-          <h4 className="text-lg font-bold">Sessions Distribution over Time</h4>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm bg-primary" />
-              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
-                Active
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm bg-waiting" />
-              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
-                Waiting
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm bg-idle" />
-              <span className="text-sm font-medium text-[#49699c] dark:text-gray-300">
-                Idle
-              </span>
-            </div>
-          </div>
-        </div>
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500">
-          <span className="material-symbols-outlined">more_horiz</span>
-        </button>
-      </div>
-      {/* Area Chart Visualization Simulation */}
-      <div className="relative chart-container w-full flex flex-col justify-end">
-        {/* SVG Area Simulation */}
-        <svg
-          className="w-full overflow-visible"
-          preserveAspectRatio="none"
-          viewBox="0 0 1000 300"
-        >
-          {/* Idle Area (Bottom) */}
-          <path
-            d="M0,280 L100,270 L200,275 L300,260 L400,265 L500,250 L600,255 L700,240 L800,245 L900,230 L1000,235 L1000,300 L0,300 Z"
-            fill="#94a3b8"
-            fillOpacity="0.2"
-            stroke="#94a3b8"
-            strokeWidth="1.5"
-          />
-          {/* Waiting Area (Middle) */}
-          <path
-            d="M0,220 L100,210 L200,230 L300,200 L400,240 L500,210 L600,230 L700,180 L800,210 L900,220 L1000,200 L1000,235 L900,230 L800,245 L700,240 L600,255 L500,250 L400,265 L300,260 L200,275 L100,270 L0,280 Z"
-            fill="#f59e0b"
-            fillOpacity="0.3"
-            stroke="#f59e0b"
-            strokeWidth="1.5"
-          />
-          {/* Active Area (Top) */}
-          <path
-            d="M0,150 Q100,120 200,140 T400,100 T600,130 T800,90 T1000,120 L1000,200 L900,220 L800,210 L700,180 L600,230 L500,210 L400,240 L300,200 L200,230 L100,210 L0,220 Z"
-            fill="#3c83f6"
-            fillOpacity="0.4"
-            stroke="#3c83f6"
-            strokeWidth="2.5"
-          />
-          {/* Tooltip Line Marker */}
-          {/* <line
-            stroke="#3c83f6"
-            strokeDasharray={4}
-            strokeWidth={1}
-            x1={700}
-            x2={700}
-            y1={0}
-            y2={300}
-          />
-          <circle
-            cx={700}
-            cy={180}
-            fill="#3c83f6"
-            r={4}
-            stroke="white"
-            strokeWidth={2}
-          /> */}
-        </svg>
-        {/* Tooltip Overlay */}
-        {/* <div className="absolute left-[70%] top-10 -translate-x-1/2 pointer-events-none z-10">
-          <div className="bg-white dark:bg-gray-900 border border-primary p-4 rounded-xl shadow-xl min-w-48 backdrop-blur-sm">
-            <p className="text-xs font-bold text-[#49699c] dark:text-gray-400 mb-2">
-              Today, 14:45:00
-            </p>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="size-2 rounded-full bg-primary" /> Active
-                </span>
-                <span className="text-sm font-black">42</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="size-2 rounded-full bg-waiting" /> Waiting
-                </span>
-                <span className="text-sm font-black text-waiting">12</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="size-2 rounded-full bg-idle" /> Idle
-                </span>
-                <span className="text-sm font-black">148</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between">
-              <span className="text-xs font-bold text-gray-500 uppercase">
-                Total Load
-              </span>
-              <span className="text-sm font-black">202</span>
-            </div>
-          </div>
-        </div> */}
-        {/* X Axis Labels */}
-        <div className="flex justify-between mt-4 px-2">
-          <span className="text-xs font-bold text-[#49699c]">14:00</span>
-          <span className="text-xs font-bold text-[#49699c]">14:15</span>
-          <span className="text-xs font-bold text-[#49699c]">14:30</span>
-          <span className="text-xs font-bold text-[#49699c]">
-            14:45
-          </span>
-          <span className="text-xs font-bold text-[#49699c]">15:00</span>
-        </div>
-      </div>
-    </div>
-        
-      </div>
+    <div className="flex flex-col gap-6">
+      <CardsSection />
+      <GraphSection />
     </div>
   );
 }

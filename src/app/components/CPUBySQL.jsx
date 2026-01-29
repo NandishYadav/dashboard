@@ -1,7 +1,6 @@
 import { Database, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
-import React, { useMemo } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useState, useMemo } from 'react';
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 
 function formatTime(ts) {
@@ -12,72 +11,59 @@ function formatTime(ts) {
   });
 }
 
-export function CPUBySQL({ queries, onQueryClick }) {
+export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
   const [expandedRows, setExpandedRows] = useState(new Set());
 
   // Sort by CPU percent descending
   const sortedQueries = [...queries].sort((a, b) => b.cpuPercent - a.cpuPercent);
   const topQueries = sortedQueries.slice(0, 10);
 
-/* ---------- GRAPH CONFIG ---------- */
-const width = 1400;
-const height = 360;
-const maxCPU = 100; // CPU %
+  /* ---------- GRAPH CONFIG ---------- */
+  const width = 1400;
+  const height = 360;
+  const maxCPU = 100; // CPU %
 
-/* ---------- NORMALIZE DATA ---------- */
-const points = useMemo(() => {
-  if (!queries?.length) return [];
+  /* ---------- NORMALIZE DATA ---------- */
+  const points = useMemo(() => {
+    if (!queries?.length) return [];
 
-  const sorted = [...queries].sort(
-    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-  );
+    const sorted = [...queries].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
 
-  return sorted.map((d, i, arr) => {
-    const x = (i / (arr.length - 1)) * width; // 🔑 NO PADDING
-    const y =
-      height -
-      (d.cpuPercent / maxCPU) * height;
+    return sorted.map((d, i, arr) => {
+      const x = (i / (arr.length - 1)) * width; // 🔑 NO PADDING
+      const y =
+        height -
+        (d.cpuPercent / maxCPU) * height;
 
-    return { ...d, x, y };
-  });
-}, [queries]);
+      return { ...d, x, y };
+    });
+  }, [queries]);
 
-/* ---------- SPLINE PATH ---------- */
-const linePath = useMemo(() => {
-  if (points.length < 2) return "";
+  /* ---------- SPLINE PATH ---------- */
+  const linePath = useMemo(() => {
+    if (points.length < 2) return "";
 
-  return points.reduce((path, point, i, arr) => {
-    if (i === 0) return `M ${point.x},${point.y}`;
+    return points.reduce((path, point, i, arr) => {
+      if (i === 0) return `M ${point.x},${point.y}`;
 
-    const prev = arr[i - 1];
-    const dx = (point.x - prev.x) / 2;
+      const prev = arr[i - 1];
+      const dx = (point.x - prev.x) / 2;
 
-    return `${path}
-      C ${prev.x + dx},${prev.y}
-        ${point.x - dx},${point.y}
-        ${point.x},${point.y}`;
-  }, "");
-}, [points]);
+      return `${path}
+        C ${prev.x + dx},${prev.y}
+          ${point.x - dx},${point.y}
+          ${point.x},${point.y}`;
+    }, "");
+  }, [points]);
 
-const areaPath = `
-  ${linePath}
-  L ${points.at(-1)?.x},${height}
-  L ${points[0]?.x},${height}
-  Z
-`;
-
-  
-  const chartData = topQueries.map(q => ({
-    name: q.sqlId.substring(0, 8),
-    value: q.cpuPercent,
-    fullSqlId: q.sqlId,
-  }));
-
-  const getBarColor = (value) => {
-    if (value >= 70) return '#dc2626'; // red
-    if (value >= 40) return '#ea580c'; // orange
-    return '#2563eb'; // blue
-  };
+  const areaPath = `
+    ${linePath}
+    L ${points.at(-1)?.x},${height}
+    L ${points[0]?.x},${height}
+    Z
+  `;
 
   const formatCPUTime = (seconds) => {
     if (seconds < 60) return `${seconds.toFixed(2)}s`;
@@ -97,91 +83,122 @@ const areaPath = `
     setExpandedRows(newExpanded);
   };
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center gap-2 mb-6">
-              <Cpu className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">CPU Utilization by SQL</h3>
+  // Graph Component
+  const GraphSection = () => (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Cpu className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">CPU Utilization by SQL</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Monitoring Period: Last 5 Hours</p>
             </div>
+          </div>
+          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+              <span className="text-gray-600 font-medium">Current</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+              <span className="text-gray-600 font-medium">Baseline</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <div className="mb-6">
-        <div className="bg-white rounded-xl border shadow-xl p-8 relative overflow-hidden">
-  <div className="flex justify-between mb-10">
-    <div>
-      <h4 className="text-lg font-bold">Utilization Trend (Spline)</h4>
-      <p className="text-sm text-slate-400">CPU usage (%) over time</p>
-    </div>
-  </div>
+      {/* Graph */}
+      <div className="relative w-full" style={{ height: '360px' }}>
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+          <defs>
+            <linearGradient id="sqlAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3c83f6" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#3c83f6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
 
-  <div className="relative w-full h-[360px]">
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-      <defs>
-        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3c83f6" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#3c83f6" stopOpacity="0" />
-        </linearGradient>
-      </defs>
+          {/* Grid Lines */}
+          {[0, 25, 50, 75, 100].map(pct => {
+            const y = height - (pct / 100) * height;
+            return (
+              <line
+                key={pct}
+                x1={0}
+                x2={width}
+                y1={y}
+                y2={y}
+                className="stroke-gray-200"
+                strokeWidth="1"
+              />
+            );
+          })}
 
-      {/* Grid Lines */}
-      {[0, 25, 50, 75, 100].map(pct => {
-        const y = height - (pct / 100) * height;
-        return (
-          <line
-            key={pct}
-            x1={0}
-            x2={width}
-            y1={y}
-            y2={y}
-            className="stroke-slate-200"
+          {/* Area */}
+          <path d={areaPath} fill="url(#sqlAreaGradient)" />
+
+          {/* Line */}
+          <path
+            d={linePath}
+            fill="none"
+            stroke="#3c83f6"
+            strokeWidth="3"
           />
-        );
-      })}
 
-      {/* Area */}
-      <path d={areaPath} fill="url(#areaGradient)" />
+          {/* Points */}
+          {points.map(p => (
+            <circle
+              key={p.timestamp}
+              cx={p.x}
+              cy={p.y}
+              r={5}
+              className="fill-blue-500 stroke-white stroke-2"
+            />
+          ))}
+        </svg>
 
-      {/* Line */}
-      <path
-        d={linePath}
-        fill="none"
-        stroke="#3c83f6"
-        strokeWidth="3"
-      />
+        {/* Y-axis labels - positioned inside */}
+        <div className="absolute left-2 top-0 h-full flex flex-col justify-between text-[10px] font-semibold text-gray-500 py-2">
+          <span>100%</span>
+          <span>75%</span>
+          <span>50%</span>
+          <span>25%</span>
+          <span>0%</span>
+        </div>
+      </div>
 
-      {/* Points */}
-      {points.map(p => (
-        <circle
-          key={p.timestamp}
-          cx={p.x}
-          cy={p.y}
-          r={5}
-          className="fill-blue-500 stroke-white stroke-2"
-        />
-      ))}
-    </svg>
-
-    {/* X-axis */}
-    <div className="flex justify-between mt-4 text-xs font-semibold text-slate-400">
-      {points.map(p => (
-        <span key={p.timestamp}>{formatTime(p.timestamp)}</span>
-      ))}
+      {/* X-axis */}
+      <div className="px-6 pb-4">
+        <div className="flex justify-between text-xs font-medium text-gray-500">
+          {points.map((p, i) => {
+            // Show only first, middle, and last labels to avoid crowding
+            if (i === 0 || i === Math.floor(points.length / 2) || i === points.length - 1) {
+              return <span key={p.timestamp}>{formatTime(p.timestamp)}</span>;
+            }
+            return <span key={p.timestamp} className="invisible">{formatTime(p.timestamp)}</span>;
+          })}
+        </div>
+      </div>
     </div>
-  </div>
+  );
 
-  {/* Y-axis */}
-  <div className="absolute left-3 top-[140px] h-[360px] flex flex-col justify-between text-[10px] font-bold text-slate-400">
-    <span>100%</span>
-    <span>75%</span>
-    <span>50%</span>
-    <span>25%</span>
-    <span>0%</span>
-  </div>
-</div>
-
+  // Table Component
+  const TableSection = () => (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-3">
+          <Cpu className="w-5 h-5 text-blue-600" />
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Top SQL Queries by CPU</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Detailed metrics and execution statistics</p>
+          </div>
+        </div>
       </div>
 
       {/* Detailed Table */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
@@ -231,7 +248,7 @@ const areaPath = `
                     </div>
                   </TableCell>
                   <TableCell>
-                    <button 
+                    <button
                       className="text-blue-600 hover:text-blue-800 hover:underline font-mono text-sm"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -246,20 +263,18 @@ const areaPath = `
                       <div className="flex-1 max-w-[100px]">
                         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all ${
-                              query.cpuPercent >= 70 ? 'bg-red-600' :
+                            className={`h-full transition-all ${query.cpuPercent >= 70 ? 'bg-red-600' :
                               query.cpuPercent >= 40 ? 'bg-orange-500' :
-                              'bg-blue-600'
-                            }`}
+                                'bg-blue-600'
+                              }`}
                             style={{ width: `${query.cpuPercent}%` }}
                           />
                         </div>
                       </div>
-                      <span className={`font-semibold ${
-                        query.cpuPercent >= 70 ? 'text-red-600' :
+                      <span className={`font-semibold ${query.cpuPercent >= 70 ? 'text-red-600' :
                         query.cpuPercent >= 40 ? 'text-orange-600' :
-                        'text-gray-900'
-                      }`}>
+                          'text-gray-900'
+                        }`}>
                         {query.cpuPercent}%
                       </span>
                     </div>
@@ -281,7 +296,7 @@ const areaPath = `
                   </TableCell>
                 </TableRow>
               ];
-              
+
               if (expandedRows.has(query.sqlId)) {
                 rows.push(
                   <TableRow key={`${query.sqlId}-expanded`} className="bg-gray-50">
@@ -316,10 +331,23 @@ const areaPath = `
           </TableBody>
         </Table>
       </div>
-      <div>
-        <p>New graph</p>
-        
-      </div>
+    </div>
+  );
+
+  // Render based on mode
+  if (mode === 'graph-only') {
+    return <GraphSection />;
+  }
+
+  if (mode === 'table-only') {
+    return <TableSection />;
+  }
+
+  // Full mode - both graph and table
+  return (
+    <div className="flex flex-col gap-6">
+      <GraphSection />
+      <TableSection />
     </div>
   );
 }
