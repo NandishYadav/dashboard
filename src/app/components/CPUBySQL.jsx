@@ -1,7 +1,38 @@
-import { Database, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
+import { Database, Cpu, ChevronDown, ChevronRight, TrendingUp } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
+// import { TrendingUp } from "lucide-react"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/app/components/ui/chart"
+export const description = "A simple area chart"
+const chartData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+}
+
 
 function formatTime(ts) {
   return new Date(ts).toLocaleTimeString("en-US", {
@@ -504,6 +535,78 @@ export function CPUBySQL({ queries, onQueryClick, mode = 'full' }) {
           </div>
         </div>
       </div>
+      <div>
+        {queries && queries.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 p-4">
+            <ChartAreaDefault chartData={queries} />
+            <ChartAreaDefault chartData={queries} />
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+
+function ChartAreaDefault({ chartData }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Area Chart</CardTitle>
+        <CardDescription>
+          Showing total visitors for the last 6 months
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ChartContainer config={chartConfig}>
+          <AreaChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="timestamp"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value.slice(12, 16)}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="line" />}
+            />
+            <Area
+              dataKey="cpuPercent"
+              type="natural"
+              fill="#3b82f6"
+              fillOpacity={0.4}
+              stroke="#3b82f6"
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 leading-none font-medium">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="text-muted-foreground flex items-center gap-2 leading-none">
+              January - June 2024
+            </div>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
+  )
 }

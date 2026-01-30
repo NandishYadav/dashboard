@@ -1,0 +1,372 @@
+{
+    "incidents": [
+        {
+            "id": "1",
+            "role": "BLOCKER",
+            "sid": 1234,
+            "username": "APP_USER",
+            "sqlId": "a8f3k2m9p1x4s",
+            "elapsedTime": 2400,
+            "waitEvent": "enq: TX - row lock contention",
+            "waitClass": "Application",
+            "blockingSid": null,
+            "impactedSessions": 7,
+            "sqlText": "UPDATE orders SET status = 'PROCESSING' WHERE order_id = :1 AND user_id = :2"
+        },
+        {
+            "id": "2",
+            "role": "VICTIM",
+            "sid": 1456,
+            "username": "WEB_APP",
+            "sqlId": "c7h9k3n2m5p8q",
+            "elapsedTime": 1850,
+            "waitEvent": "enq: TX - row lock contention",
+            "waitClass": "Application",
+            "blockingSid": 1234,
+            "impactedSessions": 0,
+            "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1"
+        },
+        {
+            "id": "3",
+            "role": "VICTIM",
+            "sid": 1567,
+            "username": "WEB_APP",
+            "sqlId": "d2k8m4p9s7t3v",
+            "elapsedTime": 1620,
+            "waitEvent": "enq: TX - row lock contention",
+            "waitClass": "Application",
+            "blockingSid": 1234,
+            "impactedSessions": 0,
+            "sqlText": "SELECT * FROM orders WHERE order_id = :1 FOR UPDATE"
+        },
+        {
+            "id": "4",
+            "role": "LONG RUNNER",
+            "sid": 2890,
+            "username": "BATCH_USER",
+            "sqlId": "f9n2q5r8t4w7x",
+            "elapsedTime": 3600,
+            "waitEvent": "db file sequential read",
+            "waitClass": "User I/O",
+            "blockingSid": null,
+            "impactedSessions": 0,
+            "sqlText": "SELECT /*+ FULL(o) PARALLEL(4) */ o.order_id, o.customer_id, SUM(oi.quantity * oi.price) as total_amount FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.created_date >= TRUNC(SYSDATE) - 90 GROUP BY o.order_id, o.customer_id HAVING SUM(oi.quantity * oi.price) > 1000"
+        },
+        {
+            "id": "5",
+            "role": "VICTIM",
+            "sid": 1678,
+            "username": "API_SERVICE",
+            "sqlId": "h3p7q2s9t5v8w",
+            "elapsedTime": 450,
+            "waitEvent": "enq: TX - row lock contention",
+            "waitClass": "Application",
+            "blockingSid": 1234,
+            "impactedSessions": 0,
+            "sqlText": "UPDATE inventory SET quantity = quantity - :1 WHERE product_id = :2"
+        }
+    ],
+    "cpu-metrics": {
+        "sessionCPU": [
+            {
+                "timestamp": "2026-01-28T08:00:00.000Z",
+                "sid": 2890,
+                "username": "BATCH_USER",
+                "program": "python@batch-processor",
+                "cpuPercent": 72,
+                "cpuTime": 5400,
+                "sqlId": "f9n2q5r8t4w7x",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T08:15:00.000Z",
+                "sid": 1456,
+                "username": "WEB_APP",
+                "program": "node@web-server-03",
+                "cpuPercent": 68,
+                "cpuTime": 1850,
+                "sqlId": "c7h9k3n2m5p8q",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T08:30:00.000Z",
+                "sid": 3456,
+                "username": "REPORTING",
+                "program": "sqlplus@report-server",
+                "cpuPercent": 45,
+                "cpuTime": 2200,
+                "sqlId": "k8m3n9p2q7r5s",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T08:45:00.000Z",
+                "sid": 1567,
+                "username": "WEB_APP",
+                "program": "node@web-server-04",
+                "cpuPercent": 20,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T09:00:00.000Z",
+                "sid": 1678,
+                "username": "API_SERVICE",
+                "program": "node@web-server-04",
+                "cpuPercent": 35,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T09:15:00.000Z",
+                "sid": 1678,
+                "username": "API_SERVICE",
+                "program": "node@web-server-04",
+                "cpuPercent": 65,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T09:30:00.000Z",
+                "sid": 1678,
+                "username": "API_SERVICE",
+                "program": "node@web-server-04",
+                "cpuPercent": 78,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T09:45:00.000Z",
+                "sid": 1678,
+                "username": "API_SERVICE",
+                "program": "node@web-server-04",
+                "cpuPercent": 65,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            },
+            {
+                "timestamp": "2026-01-28T10:00:00.000Z",
+                "sid": 1678,
+                "username": "API_SERVICE",
+                "program": "node@web-server-04",
+                "cpuPercent": 55,
+                "cpuTime": 920,
+                "sqlId": "d2k8m4p9s7t3v",
+                "status": "ACTIVE"
+            }
+        ],
+        "sqlQueryCPU": [
+            {
+                "timestamp": "2026-01-28T08:00:00.000Z",
+                "sqlId": "a8f3k2m9p1x4s",
+                "cpuPercent": 82,
+                "cpuTime": 3240,
+                "executions": 12450,
+                "avgCpuPerExec": 0.26,
+                "elapsedTime": 3840,
+                "sqlText": "UPDATE orders SET status = 'PROCESSING' WHERE order_id = :1 AND user_id = :2",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T08:15:00.000Z",
+                "sqlId": "f9n2q5r8t4w7x",
+                "cpuPercent": 75,
+                "cpuTime": 5400,
+                "executions": 245,
+                "avgCpuPerExec": 22.04,
+                "elapsedTime": 7200,
+                "sqlText": "SELECT /*+ FULL(o) PARALLEL(4) */ o.order_id, o.customer_id, SUM(oi.quantity * oi.price) as total_amount FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.created_date >= TRUNC(SYSDATE) - 90 GROUP BY o.order_id, o.customer_id HAVING SUM(oi.quantity * oi.price) > 1000",
+                "module": "BatchReporting"
+            },
+            {
+                "timestamp": "2026-01-28T08:30:00.000Z",
+                "sqlId": "fehvbfv",
+                "cpuPercent": 65,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T08:45:00.000Z",
+                "sqlId": "fkbcvfk",
+                "cpuPercent": 87,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T09:00:00.000Z",
+                "sqlId": "odjufre03fn3",
+                "cpuPercent": 34,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T09:15:00.000Z",
+                "sqlId": "jhbcjhkdwec34",
+                "cpuPercent": 98,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T09:30:00.000Z",
+                "sqlId": "ytficu394bvf",
+                "cpuPercent": 45,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T09:45:00.000Z",
+                "sqlId": "2uy4f34202f",
+                "cpuPercent": 75,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            },
+            {
+                "timestamp": "2026-01-28T10:00:00.000Z",
+                "sqlId": "rhcborejhv393",
+                "cpuPercent": 34,
+                "cpuTime": 1850,
+                "executions": 8920,
+                "avgCpuPerExec": 0.21,
+                "elapsedTime": 2100,
+                "sqlText": "UPDATE orders SET delivery_date = SYSDATE + 2 WHERE order_id = :1",
+                "module": "OrderService"
+            }
+        ]
+    },
+    "storage": {
+        "tablespaces": [
+            {
+                "name": "USERS",
+                "usedPercent": 92,
+                "freeMB": 1024,
+                "totalMB": 12800
+            },
+            {
+                "name": "DATA",
+                "usedPercent": 85,
+                "freeMB": 3840,
+                "totalMB": 25600
+            },
+            {
+                "name": "INDEX",
+                "usedPercent": 68,
+                "freeMB": 6400,
+                "totalMB": 20000
+            },
+            {
+                "name": "TEMP",
+                "usedPercent": 45,
+                "freeMB": 11000,
+                "totalMB": 20000
+            },
+            {
+                "name": "UNDO",
+                "usedPercent": 35,
+                "freeMB": 6500,
+                "totalMB": 10000
+            }
+        ],
+        "waitClassData": [
+            {
+                "name": "Application",
+                "value": 35
+            },
+            {
+                "name": "User I/O",
+                "value": 28
+            },
+            {
+                "name": "CPU",
+                "value": 20
+            },
+            {
+                "name": "Concurrency",
+                "value": 10
+            },
+            {
+                "name": "System I/O",
+                "value": 5
+            },
+            {
+                "name": "Other",
+                "value": 2
+            }
+        ]
+    },
+    "blocking-sessions": [
+        {
+            "sid": 1234,
+            "username": "APP_USER",
+            "program": "java@app-server-01",
+            "waitTime": 2400,
+            "blockingSid": null,
+            "isRootBlocker": true
+        },
+        {
+            "sid": 1456,
+            "username": "WEB_APP",
+            "program": "node@web-server-03",
+            "waitTime": 1850,
+            "blockingSid": 1234
+        },
+        {
+            "sid": 1567,
+            "username": "WEB_APP",
+            "program": "node@web-server-04",
+            "waitTime": 1620,
+            "blockingSid": 1234
+        },
+        {
+            "sid": 1678,
+            "username": "API_SERVICE",
+            "program": "python@api-gateway-02",
+            "waitTime": 450,
+            "blockingSid": 1234
+        }
+    ],
+    "databases": [
+        {
+            "name": "ORCL_PROD",
+            "status": "ONLINE",
+            "version": "19c"
+        },
+        {
+            "name": "ORCL_STAGE",
+            "status": "ONLINE",
+            "version": "19c"
+        },
+        {
+            "name": "ORCL_DEV",
+            "status": "ONLINE",
+            "version": "18c"
+        }
+    ]
+}
