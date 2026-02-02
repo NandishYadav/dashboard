@@ -432,7 +432,7 @@ function ChartAreaLinear({ chartData }) {
               right: 12,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={true} />
             <XAxis
               dataKey="timestamp"
               tickLine={false}
@@ -447,12 +447,12 @@ function ChartAreaLinear({ chartData }) {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dot" hideLabel />}
+              content={<ChartTooltipContent indicator="dot" labelFormatter={(value) => value.slice(12, 16)} />}
             />
             <Area
               dataKey="cpuPercent"
               type="linear"
-              fill="#ffff"
+              fill="#ffffffff"
               fillOpacity={0.4}
               stroke="var(--color-desktop)"
             />

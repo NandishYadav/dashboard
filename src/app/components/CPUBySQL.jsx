@@ -583,14 +583,15 @@ function ChartAreaDefault({ chartData }) {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
+              content={<ChartTooltipContent indicator="line" labelFormatter={(value) => value.slice(12, 16)} />}
             />
             <Area
               dataKey="cpuPercent"
               type="natural"
-              fill="#3b82f6"
-              fillOpacity={0.4}
-              stroke="#3b82f6"
+              fill="url(#sqlAreaGradientFull)"
+              fillOpacity={0.6}
+              stroke="var(--color-desktop)"
+              points={chartData}
             />
           </AreaChart>
         </ChartContainer>
